@@ -11,7 +11,7 @@
 # Initialize the Bridge Interface from the
 # xml file with virsh (libvirt)
 
-if [ "$1" != "br-auto" ]
+if [ "$1" != "br01" ]
 then
     echo "\n"
     echo "An error will pop if your $1.xml file have not been created !"
