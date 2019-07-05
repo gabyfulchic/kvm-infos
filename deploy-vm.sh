@@ -26,14 +26,14 @@ chown gaby:gaby -R $localDir
 [ -z "$3" ] && mem="512"
 [ -z "$4" ] && cdr="/var/lib/libvirt/boot/centos-7-x86_64-minimal-1810.iso"
 [ -z "$5" ] && disk="$localDir/img/centos.qcow2,size=5,bus=virtio,format=qcow2"
-[ -z "$6" ] && os="rhel7"
-[ -z "$7" ] && br="br-auto"
+[ -z "$6" ] && os="centos7.0"
+[ -z "$7" ] && br="br01"
 
 # create bridge interface for the vm network
 ./new-bridge.sh $br
 
 # create the disk for the vm
-quemu-img create -f qcow2 $localDir/img/centos.qcow2 5G
+qemu-img create -f qcow2 $localDir/img/centos.qcow2 5G
 
 # provision the new virtual machine
 virt-install --virt-type=kvm \
@@ -42,7 +42,9 @@ virt-install --virt-type=kvm \
 	--name=$vmname \
 	--vcpu=$vcpu \
 	--memory=$mem \
-	--cdrom=$cdr \
+	--location=$cdr \
 	--disk path=$disk \
 	--os-variant=$os \
-	--graphics none
+	--graphics none \
+        --extra-args='console=ttyS0'
+#	--noautoconsole
