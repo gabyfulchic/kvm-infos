@@ -18,6 +18,7 @@ then
     echo "\n"
 fi
 
+cd dumpxml/
 virsh net-define $1.xml
 virsh net-start $1
 virsh net-autostart $1

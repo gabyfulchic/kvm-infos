@@ -11,11 +11,13 @@
 > virsh **list** (display vm on host)
 > virsh **list --all** (display all vm on host)
 > **osinfo-query os**
+> **brctl show** (display all bridge network on host)
 
 > ## Act on vnet/network ##
 >
 > virsh **net-list** (display all net configured on host)
 > virsh **net-info** net1 (display network infos)
+> virsh **net-dhcp-leases** net1 (display all dhcp leases for a network)
 > virsh **net-create** net1.xml (create a vnet from xml file AND starts it)
 > virsh **net-define** net1.xml (create a vnet from xml file.)
 > virsh **net-start** net1 (start an innactive vnet)
@@ -41,3 +43,8 @@
 > virsh **destroy** $vmname (force a shutdown)
 > **rm -f** test.qcow2 (delete disk/data, no virsh cmd for that)
 ```  
+
+> ## Act on Disk/Img ##
+>  
+> **qemu-img info** sample.img||sample.qcow2 (display disk info)
+> **qemu-img resize** sample.img||sample.qcow2 5G (expand disk size)
