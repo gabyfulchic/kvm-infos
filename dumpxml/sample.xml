@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain type="kvm">
+   <name>sample</name>
+   <memory>512000</memory>
+   <currentMemory>512000</currentMemory>
+   <vcpu>1</vcpu>
+   <os>
+      <type arch="x86_64">hvm</type>
+      <boot dev="hd" />
+   </os>
+   <devices>
+      <emulator>/usr/libexec/qemu-kvm</emulator>
+      <disk type="file" device="disk">
+	 <driver name="qemu" type="qcow2"/>
+	 <source file="/usr/local/kvm/img/sample.qcow2" />
+         <target dev="vda" bus="virtio" />
+      </disk>
+      <disk type="file" device="cdrom">
+	 <driver name="qemu"/>
+	 <target dev="hda" bus="ide" />
+	 <readonly/>
+      </disk>
+      <interface type="bridge">
+	 <source bridge="br01"/>
+      </interface>
+   </devices>
+</domain>
