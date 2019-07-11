@@ -1,5 +1,0 @@
-#cloud-config
-password: Passw0rd
-chpassword: { exprire: False }
-ssh_pwauth: True
-hostname: centos
