@@ -1,8 +1,6 @@
 # How to use virsh  
 
-## GabyFULCHIC Virsh MAN.
-## Je vais essayer de contribuer 
-## à https://tldr.sh pour virsh.
+### GabyFULCHIC Virsh MAN.
 
 ```ruby
 > ## Act on Node/Host ##
@@ -41,10 +39,10 @@
 > virsh **suspend** $vmname (pause a vm)
 > virsh **resume** $vmname (stop pause for a vm)
 > virsh **destroy** $vmname (force a shutdown)
-> **rm -f** test.qcow2 (delete disk/data, no virsh cmd for that)
-```  
-
+> **rm -f** test.qcow2 (delete disk/data, no virsh cmd for that)  
+  
 > ## Act on Disk/Img ##
 >  
-> **qemu-img info** sample.img||sample.qcow2 (display disk info)
-> **qemu-img resize** sample.img||sample.qcow2 5G (expand disk size)
+> **qemu-img info** sample.img||sample.qcow2 (display disk info)  
+> **qemu-img resize** sample.img||sample.qcow2 5G (expand disk size)  
+```
