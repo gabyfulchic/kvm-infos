@@ -2,4 +2,4 @@
 password: Passw0rd
 chpassword: { exprire: False }
 ssh_pwauth: True
-hostname: centos
+hostname: centos1

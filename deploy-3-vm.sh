@@ -30,18 +30,28 @@
 # hostname: centos1
 # EOF
 # yum install cloud-utils -y
-# cloud-localds centos.iso cloud-init.txt
+# cloud-localds centos1.iso cloud-init.txt
 # yum install virt-install -y
 
-virt-install \
-       --name centos1 \
+vm_hostnames=(centos1)
+vm_number=${#vm_hostnames[*]}
+echo "You are creating $vm_number VMs right now !"
+
+for v in "${vm_hostnames[@]}"
+do
+    virt-install \
+       --name "$v" \
        --memory 512 \
-       --disk /usr/local/kvm/img/Centos-base.qcow2,device=disk,bus=virtio \
-       --disk /usr/local/kvm/img/centos.iso,device=cdrom \
+       --disk /usr/local/kvm/img/centos-base.qcow2,device=disk,bus=virtio \
+       --disk /usr/local/kvm/img/centos-cloud-init.iso,device=cdrom \
        --os-type linux \
        --os-variant centos7.0 \
        --virt-type kvm \
        --graphics none \
        --network bridge=br01 \
        --import
+done
 
+echo "HERE YOU CAN SEE IP ADRESSES GIVEN IN DHCP BY THE BRIDGE >>>\n"
+virsh net-dhcp-leases br01 | head -4 | tail -1
+virsh net-dhcp-leases br01 | head -4 | tail -2
