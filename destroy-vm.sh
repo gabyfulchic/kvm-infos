@@ -26,7 +26,7 @@ read netname
 # default network : (uncomment below)
 # netname=br01
 
-if [ -z "$netname" ] && exit 0
+[ -z "$netname" ] && exit 0
 
 # Bye Bridge
 virsh net-destroy $netname
