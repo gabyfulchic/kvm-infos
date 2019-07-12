@@ -38,9 +38,9 @@ setCloudInit () {
     do
         cat > $img_path/$v.txt << EOF
         password: Passw0rd
-        hostname: $vi
+        hostname: $v
 	chpassword: { expire: False }
-	ssh_pwauth: False
+	ssh_pwauth: True
 	ssh_authorized_keys:
 	  - $ssh_pubkey
 EOF
@@ -70,8 +70,8 @@ deployVms () {
            --virt-type kvm \
            --name "$v" \
            --memory 512 \
-           --network bridge=$br \
-           --disk $img_path/centos-base.qcow2,device=disk,bus=virtio \
+           --network bridge=$br,model=virtio \
+           --disk $img_path/centos-base.qcow2,format=qcow2,bus=virtio \
            --disk $img_path/$v.iso,device=cdrom \
            --import \
            --os-type linux \
@@ -79,6 +79,8 @@ deployVms () {
            --graphics none \
 	   --noautoconsole
     done
+    
+    virsh list --all
 
     echo "                                                              "
     echo "############################################################# "
@@ -90,6 +92,6 @@ deployVms () {
     virsh net-dhcp-leases br01 | head -$index_leases | tail -$vm_number
 }
 
-getIso
+#getIso
 setCloudInit
 deployVms
