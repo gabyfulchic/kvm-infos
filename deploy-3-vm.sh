@@ -24,6 +24,7 @@
 vm_hostnames=(centos1 centos2) 
 img_path="/usr/local/kvm/img"
 ssh_pubkey="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQPqSqgjcGq+6Fs2hFvexDHssJsDeQdyPTQVJC+yqxBEWX1TrnB714QbCAz9ugO5G6lEzqSt0Syf49mrJ52REYy0g5nk/oGu24/jeknjoSLT4ad7WrqZBMFpjf3CDr778Ry0xbcYc5/LrwLxNpJtZwiqhA2T1o4+zVN9RePrBMvBYOLZ0/MmpW9p2sRns0RzpStRf8zkWbndGM8tLj/Qauy51nXKZcmP1CRJ+KCRPmc4n9wikj5mFe5QH1kZIiZjhSy16i3wrA5unbzlVblLDXRA/t7mzCCdkkzFS+XONo1GPz1mGY3uIOJLDUn5WyjvqkHSplvZWUQLRegLagpQ22+SGjJoUozAiUnvRwabMFDjt0JCBWVZdQJup5jI06jkF2VnTCkOOjtiuRkBRsmhTtKguwv6Gm5UPmEsx5WbgwGiS/9nYWldcwMoElz5eLunRdQBSUgwm6/B90YyeGrQv2Yuh6Bue+ZxKegizcnMloDv9ItbUeQSjI5F8gSblSKkSTU8stDXqnULlstx2RAWt8NOqBUyfNIrZLMHXIvzptH9RKO8BQfafgxJ2RNIAnhTDdqzYn3lNa2lN1oZjR0WEUUvN6rVHIWTasrlWRNj1GuiscRsrcEM3kvNQ9d1ju5EyuCLD76xZa67LCxB+r+SZ5860qAPzwiqsuX/RNAF7w+w== Root's Server PublicKey"
+cpu_available=`cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l`
 
 getIso () {
     cd $img_path/ && wget https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1809.qcow2
@@ -52,24 +53,29 @@ EOF
 deployVms () {
     yum install virt-install -y
     vm_number=${#vm_hostnames[*]}
-
-    echo "###########################################"
-    echo "You are creating $vm_number VMs right now !"
-    echo "###########################################"
+    
+    if [ $cpu_available -lt $vm_number ]
+    then
+        echo " Error - Can't use more VCPU that you have !"
+    else
+        echo "###########################################"
+        echo "You are creating $vm_number VMs right now !"
+        echo "###########################################"
     
     for v in "${vm_hostnames[@]}"
     do
         virt-install \
+           --virt-type kvm \
            --name "$v" \
            --memory 512 \
+           --network bridge=br01 \
            --disk $img_path/centos-base.qcow2,device=disk,bus=virtio \
            --disk $img_path/$v.iso,device=cdrom \
+           --import \
            --os-type linux \
            --os-variant centos7.0 \
-           --virt-type kvm \
            --graphics none \
-           --network bridge=br01 \
-           --import
+	   --noautoconsole
     done
 
     echo "                                                              "
@@ -77,7 +83,7 @@ deployVms () {
     echo "HERE YOU CAN SEE IP ADRESSES GIVEN IN DHCP BY THE BRIDGE >>>  "
     echo "############################################################# "
     echo "                                                              "
-
+    
     virsh net-dhcp-leases br01 | head -4 | tail -1
     virsh net-dhcp-leases br01 | head -3 | tail -1
 }
