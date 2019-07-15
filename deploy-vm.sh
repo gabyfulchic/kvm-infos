@@ -3,7 +3,7 @@
 ##################
 #                #
 # FULCHIC Gaby   #
-# v1.2           #
+# v1.3           #
 #                #
 ##################
 
@@ -33,17 +33,39 @@ getIso () {
     # qemu-img convert -f CentOS-7-x86_64-GenericCloud-1809.qcow2 Centos-base.qcow2
 }
 
+# Cloud-init syntax samples >
+#
+# chpassword: { expire: False }
+# runcmd:
+#   - [ ifup, eth0 ]
+#   - [ systemctl, status, networking ]
+
 setCloudInit () {
     for v in "${vm_hostnames[@]}"
     do
-        cat > $img_path/$v.txt << EOF
+        cat > $img_path/user-data-$v << EOF
         password: Passw0rd
         hostname: $v
-	chpassword: { expire: False }
 	ssh_pwauth: True
 	ssh_authorized_keys:
 	  - $ssh_pubkey
+	runcmd:
+	  - [ yum, remove, -y, cloud-init ]
+	final_message: "The system is finally UP. Success!"
+	power_state:
+	  delay: "+1"
+	  mode: reboot
+	  message: Reboot is needed to conf network !!
+	  timeout: 120
 EOF
+        cat > $img_path/meta-data-$v << EOF
+	instance-id: 
+	local-hostname: $v
+EOF
+        #genisoimage -output $img_path/$v.iso \
+	#	-volid cidata \
+	#	-joliet -r user-data-$v meta-data-$v && \
+	#	echo "Cloud Image ISO have been generated successfully !"
         cloud-localds $img_path/$v.iso $img_path/$v.txt
     done
 }
@@ -55,7 +77,7 @@ deployVms () {
     if [ $cpu_available -lt $vm_number ]
     then
         echo " Error - Can't use more VCPU than there are available !"
-	exit 0
+    	exit 0
     else
         echo "###########################################"
         echo "You are creating $vm_number VMs right now !"
@@ -63,7 +85,7 @@ deployVms () {
     fi
     
     virsh net-list --all | grep "br01" || ./new-bridge.sh br01
-
+    
     for v in "${vm_hostnames[@]}"
     do
         virt-install \
