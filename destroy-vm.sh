@@ -12,10 +12,12 @@ read vmname
 # default vmname : (uncomment below)
 # vmname=centos
 
+[ -z "$vmname" ] && exit 0
+
 # Bye VM
 virsh destroy $vmname
 virsh undefine $vmname
-rm -f /usr/local/kvm/img/$vmname.qcow2
+# rm -f /usr/local/kvm/img/$vmname.qcow2
 virsh list --all
 
 
