@@ -47,8 +47,12 @@ iso_url="https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1
 ssh_pubkey="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQPqSqgjcGq+6Fs2hFvexDHssJsDeQdyPTQVJC+yqxBEWX1TrnB714QbCAz9ugO5G6lEzqSt0Syf49mrJ52REYy0g5nk/oGu24/jeknjoSLT4ad7WrqZBMFpjf3CDr778Ry0xbcYc5/LrwLxNpJtZwiqhA2T1o4+zVN9RePrBMvBYOLZ0/MmpW9p2sRns0RzpStRf8zkWbndGM8tLj/Qauy51nXKZcmP1CRJ+KCRPmc4n9wikj5mFe5QH1kZIiZjhSy16i3wrA5unbzlVblLDXRA/t7mzCCdkkzFS+XONo1GPz1mGY3uIOJLDUn5WyjvqkHSplvZWUQLRegLagpQ22+SGjJoUozAiUnvRwabMFDjt0JCBWVZdQJup5jI06jkF2VnTCkOOjtiuRkBRsmhTtKguwv6Gm5UPmEsx5WbgwGiS/9nYWldcwMoElz5eLunRdQBSUgwm6/B90YyeGrQv2Yuh6Bue+ZxKegizcnMloDv9ItbUeQSjI5F8gSblSKkSTU8stDXqnULlstx2RAWt8NOqBUyfNIrZLMHXIvzptH9RKO8BQfafgxJ2RNIAnhTDdqzYn3lNa2lN1oZjR0WEUUvN6rVHIWTasrlWRNj1GuiscRsrcEM3kvNQ9d1ju5EyuCLD76xZa67LCxB+r+SZ5860qAPzwiqsuX/RNAF7w+w== Root's Server PublicKey"
 
 getIso () {
-    cd $img_path/ && wget $iso_url
     iso_name=`basename $iso_url`
+    [ -a $img_path/$iso_name ] && rm $img_path/$iso_name
+    [ -d $img_path ] || \
+	    { printf "\n- Error : The img directory not exist ($img_path), \
+		    edit the script to adapt it for your environment !"; exit 1; }
+    cd $img_path/ && wget $iso_url
     qemu-img info $iso_name
     # qemu-img resize CentOS-7-x86_64-GenericCloud-1809.qcow2 10G
     # qemu-img convert -f CentOS-7-x86_64-GenericCloud-1809.qcow2 Centos-base.qcow2
@@ -123,6 +127,10 @@ deployVms () {
     #	    vms, they may dont take any ip. Check by using \
     #	    | virsh net-dhcp-leases $br | #####"
     
+    log_path="/usr/local/kvm/logs"
+    [ -d $log_path ] || \
+	    { printf "\n- Error : The log path is not created ($log_path) ! \
+		    Come to edit the path as you want !"; exit 1; }
     for v in "${vm_hostnames[@]}"
     do
         virt-install \
@@ -136,16 +144,17 @@ deployVms () {
            --os-type linux \
            --os-variant $os_variant \
            --graphics none \
-    	   --noautoconsole
+	   --noautoconsole >> $log_path/$v-$(date +%F_%R).log 2>&1
     done
     
     virsh list --all
     
-    printf "\n############################################################# "
-    printf "\nHERE YOU CAN SEE IP ADRESSES GIVEN IN DHCP BY THE BRIDGE >>>  "
-    printf "\n############################################################# "
+    printf "\n#############################################################"
+    printf "\nHERE YOU CAN SEE IP ADRESSES GIVEN IN DHCP BY THE BRIDGE >>> "
+    printf "\n#############################################################\n\n"
     
     index_leases=$(($vm_number+2))
+    printf "-> "
     virsh net-dhcp-leases br01 | head -$index_leases | tail -$vm_number
 }
 
